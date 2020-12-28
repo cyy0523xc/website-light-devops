@@ -4,6 +4,7 @@
 2. 回滚就版本
 """
 import os
+import shutil
 import tarfile
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi import status, HTTPException
@@ -21,12 +22,13 @@ async def api_version_release(
     tar_file: UploadFile = File(..., description='待发布的tar打包文件'),
     project: str = Form(..., title='项目名称',
                         description='项目名称'),
-    secrect: str = Form(..., title='项目发布密钥',
-                        description='项目发布密钥'),
+    secret: str = Form(..., title='项目发布密钥',
+                       description='项目发布密钥'),
     module: str = Form(..., title='模块名称',
                        description='模块名称'),
 ):
-    if project not in projects_conf or secrect != projects_conf[project]['secrect']:
+    if project not in projects_conf or secret != projects_conf[project]['secret']:
+        print(project, secret)
         error('错误的项目名称或者发布密钥')
     if not module.islower() or not module.isalpha():
         error('非法模块名')
@@ -49,9 +51,18 @@ async def api_version_release(
     if not tarfile.is_tarfile(upload_filename):
         os.remove(upload_filename)
         error('非法tar文件')
+    # 删除备份项目
+    project_bak = os.path.join(root_path, project, module+'_bak')
+    if os.path.isdir(project_bak):
+        os.rmdir(project_bak)
+    # 备份旧项目（回滚时可以直接回滚该目录）
+    shutil.move(project_path, project_bak)
+    # 部署新项目
     with tarfile.open(upload_filename) as tfile:
         tfile.extractall(project_path)
     
+    # delete upload file
+    os.remove(upload_filename)
     return True
 
 
@@ -60,9 +71,9 @@ async def api_version_release(
     project: str = Form(..., example='项目名称',
                         title='项目名称',
                         description='项目名称'),
-    secrect: str = Form(..., example='项目发布密钥',
-                        title='项目发布密钥',
-                        description='项目发布密钥'),
+    secret: str = Form(..., example='项目发布密钥',
+                       title='项目发布密钥',
+                       description='项目发布密钥'),
 ):
     return '开发中...'
 

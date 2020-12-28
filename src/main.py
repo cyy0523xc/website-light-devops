@@ -54,11 +54,18 @@ async def api_version_release(
     # 删除备份项目
     project_bak = os.path.join(root_path, project, module+'_bak')
     if os.path.isdir(project_bak):
-        os.rmdir(project_bak)
+        shutil.rmtree(project_bak, ignore_errors=True)
     # 备份旧项目（回滚时可以直接回滚该目录）
     shutil.move(project_path, project_bak)
     # 部署新项目
     with tarfile.open(upload_filename) as tfile:
+        names = tfile.getnames()
+        if names[0] != 'dist':
+            raise Exception('打包文件结构错误')
+        for name in names:
+            if not name.startswith('dist'):
+                raise Exception('打包文件结构错误')
+
         tfile.extractall(project_path)
     
     # delete upload file

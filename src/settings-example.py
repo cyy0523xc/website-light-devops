@@ -6,4 +6,5 @@ root_path = os.path.join('D:\\', 'deploy', 'tmp')
 projects_conf = {
     'text.eyedmp.com': {
         'secret': 'sdnk29isdk#%8',
+    }
 }

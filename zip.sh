@@ -35,7 +35,7 @@ tar -zcvf "$filename" \
     --exclude ".swp" \
     --exclude "__pycache__" \
     --exclude "settings.py" \
-    "$name/src"
+    "$name/src" "$name/README.md"
 
 date
 echo "$filename"

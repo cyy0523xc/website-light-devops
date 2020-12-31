@@ -7,12 +7,12 @@ import os
 import time
 import shutil
 import tarfile
-from uuid import uuid1
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi import status, HTTPException
 from settings import root_path, projects_conf
 from settings import nginx_root, nginx_secret
 from main_settings import BaseResp
+from utils import err_return, succ_return, error
+from utils import run_cmds
 
 with open('description.md') as f:
     description = f.read()
@@ -34,9 +34,12 @@ async def api_version_release(
                        description='项目发布密钥'),
     module: str = Form(..., title='模块名称',
                        description='模块名称'),
-    version: str = Form('', title='版本说明',
-                        description='版本说明'),
+    version: str = Form(..., title='版本号',
+                        description='版本应该有自己的版本号，以便后续查询'),
+    remark: str = Form('', title='版本更新备注',
+                       description='新版本发布的时候，应该写上相应的更新说明，这些信息会记录在版本更新记录里，通过历史接口可以查询'),
 ):
+    """新版本发布：新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确"""
     secret_check(project, module, secret)
     project_path = os.path.join(root_path, project, module)
     upload_path = os.path.join(root_path, project, 'upload', module)
@@ -76,14 +79,14 @@ async def api_version_release(
     deploy_log = get_deploy_logfile(project, module)
     with open(deploy_log, 'a+') as f:
         time_str = time.strftime("%Y-%m-%d %H:%M")
-        msg = "Time: %s  File: %s:  Msg: %s\n" % (time_str, tar_filename, version)
+        msg = "%s: %s, Version: %s, Remark: %s" % (time_str, tar_filename, version, remark)
         f.write(msg)
     return succ_return()
 
 
 @app.post('/version/rollback', summary='版本回滚接口', tags=['版本管理'],
           response_model=BaseResp)
-async def api_version_release(
+async def api_version_rollback(
     project: str = Form(..., title='项目名称',
                         description='项目名称'),
     secret: str = Form(..., title='项目发布密钥',
@@ -91,6 +94,7 @@ async def api_version_release(
     module: str = Form(..., title='模块名称',
                        description='模块名称'),
 ):
+    """版本回滚到上一个版本"""
     secret_check(project, module, secret)
     project_path = os.path.join(root_path, project, module)
     project_bak = os.path.join(root_path, project, 'backup', module)
@@ -152,13 +156,8 @@ async def api_nginx_pull(
     """相当于在Nginx配置目录执行git pull"""
     if secret != nginx_secret:
         error('秘钥错误')
-    log_file = '/tmp/%s.log' % uuid1()
-    os.system('cd %s; git pull > %s' % (nginx_root, log_file))
-    if not os.path.isfile(log_file):
-        error('操作失败')
-    with open(log_file) as f:
-        msg = f.read()
-    os.remove(log_file)
+    cmds = ['cd %s' % nginx_root, 'git pull']
+    msg = run_cmds(cmds)
     return succ_return(msg=msg)
 
 
@@ -171,33 +170,14 @@ async def api_nginx_reload(
     """相当于执行命令: nginx -s reload"""
     if secret != nginx_secret:
         error('秘钥错误')
-    log_file = '/tmp/%s.log' % uuid1()
-    os.system('nginx -s reload > %s' % (log_file))
-    if not os.path.isfile(log_file):
-        error('操作失败')
-    with open(log_file) as f:
-        msg = f.read()
-    os.remove(log_file)
+    cmds = ['nginx -s reload']
+    msg = run_cmds(cmds)
     return succ_return(msg=msg)
 
 
 def get_deploy_logfile(project, module):
     """获取部署日志文件名"""
     return os.path.join(root_path, project, 'logs', '%s-deploy.log' % module)
-
-
-def err_return(msg):
-    return {
-        'status': False,
-        'msg': msg,
-    }
-
-
-def succ_return(msg=''):
-    return {
-        'status': True,
-        'msg': msg
-    }
 
 
 def secret_check(project, module, secret):
@@ -218,10 +198,6 @@ def secret_check(project, module, secret):
         error('模块名不存在或者配置不正确')
 
     return True
-
-
-def error(msg, code=status.HTTP_422_UNPROCESSABLE_ENTITY):
-    raise HTTPException(status_code=code, detail=msg)
 
 
 if __name__ == "__main__":

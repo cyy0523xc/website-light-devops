@@ -200,7 +200,7 @@ def secret_check(project, module, secret):
     if project not in projects_conf or secret != projects_conf[project]['secret']:
         print(project, secret)
         error('错误的项目名称或者发布密钥')
-    if project in set(('backup', 'logs')) or project.startswith('.'):
+    if project in set(('backup', 'logs', 'upload')) or project.startswith('.'):
         print(project)
         error('非法项目名称')
     if not module.islower() or not module.isalpha():

@@ -12,7 +12,7 @@ from settings import root_path, projects_conf
 from settings import nginx_root, nginx_secret
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
-from utils import run_cmds
+from utils import run_cmds, check_version, cmp_version
 
 with open('description.md') as f:
     description = f.read()
@@ -35,17 +35,28 @@ async def api_version_release(
     module: str = Form(..., title='模块名称',
                        description='模块名称'),
     version: str = Form(..., title='版本号',
-                        description='版本应该有自己的版本号，以便后续查询'),
+                        description='版本应该有自己的版本号，以便后续查询。版本号规范：1.0, 0.5.2'),
     remark: str = Form('', title='版本更新备注',
                        description='新版本发布的时候，应该写上相应的更新说明，这些信息会记录在版本更新记录里，通过历史接口可以查询'),
 ):
     """新版本发布：新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确"""
+    if not check_version(version):
+        return err_return('版本号不规范，请参照接口的参数说明')
+
     secret_check(project, module, secret)
     project_path = os.path.join(root_path, project, module)
     upload_path = os.path.join(root_path, project, 'upload', module)
     tar_filename = tar_file.filename
     if not tar_filename.isascii() or '/' in tar_filename or '\\' in tar_filename or not tar_filename.endswith('.tar'):
         error('非法文件或者文件名')
+    # 获取旧的版本号信息
+    version_path = os.path.join(project_path, 'version.txt')
+    if os.path.isfile(version_path):
+        with open(version_path) as f:
+            old_version = f.read().strip()
+            if cmp_version(version, old_version) <= 0:
+                return err_return('版本号不是最新的。比较规则举例：1.2 > 1.1.10, 1.2 < 1.10')
+
     # 保存到上传目录
     tar_file = tar_file.file
     upload_filename = os.path.join(upload_path, tar_filename)
@@ -75,11 +86,15 @@ async def api_version_release(
     
     # delete upload file
     os.remove(upload_filename)
+    # 写入版本号数据
+    with open(version_path, 'w+') as f:
+        f.write(version)
+
     # 记录部署信息
     deploy_log = get_deploy_logfile(project, module)
     with open(deploy_log, 'a+') as f:
         time_str = time.strftime("%Y-%m-%d %H:%M")
-        msg = "%s: %s, Version: %s, Remark: %s" % (time_str, tar_filename, version, remark)
+        msg = "\n%s: %s, Version: %s, Remark: %s" % (time_str, tar_filename, version, remark)
         f.write(msg)
     return succ_return()
 

@@ -20,8 +20,7 @@ if [ -f "$filename" ]; then
     rm -f "$filename"
 fi
 
-# 第一次打包时，记得把模型文件也打包在一起
-# 正式发布时，记得过滤src目录中的内容
+# 打包src目录和readme文件
 tar -zcvf "$filename" \
     --exclude ".git" \
     --exclude ".*" \

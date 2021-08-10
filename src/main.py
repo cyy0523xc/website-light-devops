@@ -17,7 +17,10 @@ from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
 from project import ProjectPath
 
-with open('description.md', encoding='utf8') as f:
+base_dir = os.getcwd()
+curr_dir = os.path.join(base_dir, os.path.dirname(__file__))
+# print(curr_dir)
+with open(os.path.join(curr_dir, 'description.md'), encoding='utf8') as f:
     description = f.read()
 
 app = FastAPI(

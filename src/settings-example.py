@@ -1,14 +1,14 @@
 import os
 
 # nginx root path
-nginx_root = '/etc/nginx/nginx-conf/'
+nginx_root = '/product_demo_devops/apps/nginx-conf/nginx-conf-v2/'
 # Nginx管理秘钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'
 # nginx网站配置所在目录
-nginx_site_path = '/'
+nginx_site_path = '/etc/nginx/sites-enabled/'
 
 # 项目根目录
-root_path = '/tmp/'
+root_path = '/product_demo_devops/apps/website-light-devops/projects/'
 # 代码文件所在目录
 base_path = os.getcwd()
 base_path = os.path.join(base_path, os.path.dirname(__file__))

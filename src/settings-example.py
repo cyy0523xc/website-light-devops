@@ -5,7 +5,7 @@ nginx_root = '/product_demo_devops/apps/nginx-conf/nginx-conf-v2/'
 # Nginx管理秘钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'
 # nginx网站配置所在目录
-nginx_root = '/product_demo_devops/apps/website-light-devops/nginx-conf/'
+nginx_site_path = '/product_demo_devops/apps/website-light-devops/nginx-conf/'
 
 # 项目根目录
 root_path = '/product_demo_devops/apps/website-light-devops/projects/'
@@ -17,3 +17,8 @@ base_path = os.path.join(base_path, os.path.dirname(__file__))
 # 定义范围主要是为了避免端口冲突
 port_min = 31000
 port_max = 31999
+
+# 校验变量
+assert os.path.isdir(nginx_root)
+assert os.path.isdir(nginx_site_path)
+assert os.path.isdir(root_path)

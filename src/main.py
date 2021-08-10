@@ -3,10 +3,8 @@
 1. 部署新版本
 2. 回滚就版本
 """
-from logging import root
-from ntpath import join
 import os
-from sys import version
+from os.path import join, isfile, isdir
 import time
 import json
 import shutil
@@ -21,7 +19,7 @@ from utils import run_cmds, cmp_version
 from project import ProjectPath, get_projects
 
 # print(base_path)
-with open(os.path.join(base_path, 'description.md'), encoding='utf8') as f:
+with open(join(base_path, 'description.md'), encoding='utf8') as f:
     description = f.read()
 
 app = FastAPI(
@@ -56,7 +54,7 @@ async def api_version_release(
         error('非法文件或者文件名：%s' % tar_filename)
 
     # 获取旧的版本号信息
-    if os.path.isfile(ppath.version_path):
+    if isfile(ppath.version_path):
         with open(ppath.version_path, encoding='utf8') as f:
             old_version = f.read().strip()
             if cmp_version(version, old_version) <= 0:
@@ -64,7 +62,7 @@ async def api_version_release(
 
     # 保存到上传目录
     tar_file = tar_file.file
-    upload_filename = os.path.join(ppath.upload_path, tar_filename)
+    upload_filename = join(ppath.upload_path, tar_filename)
     with open(upload_filename, 'wb', encoding='utf8') as f:
         f.write(tar_file.read())
 
@@ -74,7 +72,7 @@ async def api_version_release(
         return err_return('非法tar文件')
 
     # 删除备份项目
-    if os.path.isdir(ppath.project_bak):
+    if isdir(ppath.project_bak):
         shutil.rmtree(ppath.project_bak, ignore_errors=True)
 
     # 备份旧项目（回滚时可以直接回滚该目录）
@@ -121,11 +119,11 @@ async def api_version_rollback(
     """版本回滚到上一个版本"""
     ppath = ProjectPath(project)
     ppath.secret_check(secret)
-    if not os.path.isdir(ppath.project_bak):
+    if not isdir(ppath.project_bak):
         return err_return('备份版本不存在，无法回滚')
 
     # 备份当前模块
-    if os.path.isdir(ppath.project_tmp):
+    if isdir(ppath.project_tmp):
         shutil.rmtree(ppath.project_tmp, ignore_errors=True)
     shutil.move(ppath.project_path, ppath.project_tmp)
     try:
@@ -186,12 +184,12 @@ async def api_config_projects():
         ppath = ProjectPath(key)
         # 获取版本信息
         version = None
-        if os.path.isfile(ppath.version_path):
+        if isfile(ppath.version_path):
             with open(ppath.version_path, encoding='utf8') as f:
                 version = f.read().strip()
         # 获取最后更新数据
         last_updated = None
-        if os.path.isfile(ppath.deploy_log):
+        if isfile(ppath.deploy_log):
             with open(ppath.deploy_log, encoding='utf8') as f:
                 history = f.readlines()
             history = [m.strip() for m in history]
@@ -253,9 +251,9 @@ async def api_version_history(
 ):
     """获取版本更新的历史信息"""
     ppath = ProjectPath(project)
-    if not os.path.isdir(ppath.project_path):
+    if not isdir(ppath.project_path):
         error('参数错误')
-    if not os.path.isfile(ppath.deploy_log):
+    if not isfile(ppath.deploy_log):
         return []
     with open(ppath.deploy_log, encoding='utf8') as f:
         history = f.readlines()

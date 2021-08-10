@@ -259,7 +259,11 @@ async def api_project_delete(
 
     ppath = ProjectPath(project)
     # 删除项目目录(备份)
-    shutil.move(ppath.project_path, join(root_path, "backup_%s" % project))
+    if isdir(ppath.project_path):
+        targe_path = join(root_path, "backup_%s" % project)
+        if isdir(targe_path):
+            error('删除备份目录已经存在: %s' % targe_path)
+        shutil.move(ppath.project_path, targe_path)
 
     # 删除nginx配置
     site_file = join(nginx_site_path, '%s.conf' % project)

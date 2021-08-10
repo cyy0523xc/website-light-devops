@@ -81,7 +81,8 @@ def get_projects() -> Dict:
     conf_file = join(base_path, 'projects.json')
     if not isfile(conf_file):
         return {}
-    return json.load(conf_file)
+    with open(conf_file, encoding='utf8') as f:
+        return json.load(f)
 
 
 def update_confs(confs) -> None:

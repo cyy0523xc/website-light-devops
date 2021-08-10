@@ -231,12 +231,11 @@ async def api_project_init(
     with open(site_conf_temp, encoding='utf8') as f:
         site_conf = f.read()
     # 配置参数
-    site_conf.replace('__desc__', desc)
-    site_conf.replace('__port__', str(port))
-    site_conf.replace('__root__', join(ppath.project_path, 'dist'))
-    site_conf.replace('__error_log__', join(ppath.project_path, 'error.log'))
-    site_conf.replace('__access_log__', join(ppath.project_path, 'access.log'))
-    print(site_conf)
+    site_conf = site_conf.replace('__desc__', desc)
+    site_conf = site_conf.replace('__port__', str(port))
+    site_conf = site_conf.replace('__root__', join(ppath.project_path, 'dist'))
+    site_conf = site_conf.replace('__error_log__', join(ppath.project_path, 'error.log'))
+    site_conf = site_conf.replace('__access_log__', join(ppath.project_path, 'access.log'))
     # 写入配置
     site_file = join(nginx_site_path, '%s.conf' % project)
     with open(site_file, 'w', encoding='utf8') as f:

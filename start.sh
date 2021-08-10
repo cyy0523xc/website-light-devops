@@ -4,5 +4,5 @@ if
 then
    echo date > run.log
 else
-    python3 src/main.py --key "$key"
+    nohup python3 src/main.py --key "$key" &
 fi

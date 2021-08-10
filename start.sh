@@ -1,6 +1,6 @@
 key="website-light-devops"
 if
-    ps aux|grep "$key"
+    ps aux|grep "$key"|grep -v grep
 then
    echo $(date) > run.log
 else

@@ -10,5 +10,5 @@ then
     echo $(date) > status.log
     echo $(ps aux|grep "$key"|grep python|grep -v start.sh|grep -v grep) >> status.log
 else
-    python3 src/main.py --key "$key" >> running.log
+    python3 src/main.py --key "$key" 1> running.log 2>&1  # >> running.log
 fi

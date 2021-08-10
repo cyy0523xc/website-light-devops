@@ -28,7 +28,7 @@ class ProjectPath:
         # 版本号记录文件
         self.version_path = join(root_path, project, 'version.txt')
 
-    def secret_check(self, secret: str, project_conf: dict):
+    def secret_check(self, secret: str, project_conf: dict) -> bool:
         """安全检测"""
         if secret != project_conf['secret']:
             print(self.project, secret)
@@ -44,7 +44,7 @@ class ProjectPath:
 
         return True
 
-    def init(self, port: int, secret: str, desc: str):
+    def init(self, port: int, secret: str, desc: str) -> bool:
         """项目目录初始化:
         1. 创建项目目录
         2. 创建上传目录
@@ -87,7 +87,7 @@ def get_projects() -> Dict:
     return json.load(conf_file)
 
 
-def update_confs(confs):
+def update_confs(confs) -> None:
     """更新项目配置"""
     conf_file = join(base_path, 'projects.json')
     with open(conf_file, encoding='utf8') as f:

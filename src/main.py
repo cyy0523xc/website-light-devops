@@ -3,6 +3,8 @@
 1. 部署新版本
 2. 回滚就版本
 """
+from logging import root
+from ntpath import join
 import os
 from sys import version
 import time
@@ -10,17 +12,15 @@ import json
 import shutil
 import tarfile
 from fastapi import FastAPI, File, UploadFile, Form
-from settings import nginx_root, nginx_secret
-from settings import projects_conf
+from settings import nginx_root, nginx_secret, nginx_site_path
+from settings import base_path
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
-from project import ProjectPath
+from project import ProjectPath, get_projects
 
-base_dir = os.getcwd()
-curr_dir = os.path.join(base_dir, os.path.dirname(__file__))
-# print(curr_dir)
-with open(os.path.join(curr_dir, 'description.md'), encoding='utf8') as f:
+# print(base_path)
+with open(os.path.join(base_path, 'description.md'), encoding='utf8') as f:
     description = f.read()
 
 app = FastAPI(
@@ -180,6 +180,7 @@ async def api_config_projects():
     """获取项目列表接口\n
     可以查看已经配置的项目名称，端口，备注，当前版本及最后的更新信息等信息。"""
     data = []
+    projects_conf = get_projects()
     for key, val in projects_conf.items():
         ppath = ProjectPath(key)
         # 获取版本信息
@@ -204,6 +205,45 @@ async def api_config_projects():
             'last_updated': last_updated,
         })
     return data
+
+
+@app.post('/project/init', summary='项目初始化', tags=['Project'])
+async def api_project_init(
+    secret: str = Form(..., title='管理密钥',
+                       description='管理密钥'),
+    project: str = Form(..., title='项目名称',
+                        description='项目名称'),
+    port: int = Form(..., ge=31000, lt=32000, title='项目端口号',
+                     description='项目端口号'),
+    desc: str = Form(..., title='项目说明',
+                     description='项目说明'),
+    prj_secret: str = Form(..., title='项目发布密钥',
+                           description='项目发布密钥'),
+):
+    """项目初始化\n
+    在初始化之前，项目必须已经存在配置文件中。
+    """
+    if secret != nginx_secret:
+        error('管理密钥错误')
+
+    ppath = ProjectPath(project)
+    ppath.init(port, prj_secret, desc)
+    # ppath.secret_check(prj_secret)
+    site_conf_temp = join(base_path, 'nginx-site.conf')
+    with open(site_conf_temp, encoding='utf8') as f:
+        site_conf = f.read()
+    # 配置参数
+    site_conf.replace('__port__', port)
+    site_conf.replace('__desc__', desc)
+    site_conf.replace('__root__', join(ppath.project_path, 'dist'))
+    site_conf.replace('__error_log__', join(ppath.project_path, 'error.log'))
+    site_conf.replace('__access_log__', join(ppath.project_path, 'access.log'))
+    # 写入配置
+    site_file = join(nginx_site_path, '%s.conf' % project)
+    with open(site_file, 'w', encoding='utf8') as f:
+        f.write(site_conf)
+
+    succ_return('操作成功')
 
 
 @app.post('/project/history', summary='项目更新历史', tags=['Project'])

@@ -4,8 +4,11 @@
 # Author: caiyingyao
 # Email: cyy0523xc@gmail.com
 # Created Time: 2021-08-10
-from os.path import join, isdir
-from settings import root_path, projects_conf
+import os
+import json
+from typing import Dict
+from os.path import join, isdir, isfile
+from settings import root_path, base_path
 from utils import error
 
 
@@ -25,11 +28,11 @@ class ProjectPath:
         # 版本号记录文件
         self.version_path = join(root_path, project, 'version.txt')
 
-    def secret_check(self, secret: str):
+    def secret_check(self, secret: str, project_conf: dict):
         """安全检测"""
-        if self.project not in projects_conf or secret != projects_conf[self.project]['secret']:
+        if secret != project_conf['secret']:
             print(self.project, secret)
-            error('错误的项目名称或者发布密钥')
+            error('项目发布密钥错误')
         if self.project in set(['upload', 'backup', 'tmp', 'deploy.log', 'version.txt']):
             print(self.project)
             error('非法项目名称')
@@ -40,3 +43,52 @@ class ProjectPath:
             error('模块名不存在或者配置不正确')
 
         return True
+
+    def init(self, port: int, secret: str, desc: str):
+        """项目目录初始化:
+        1. 创建项目目录
+        2. 创建上传目录
+        3. 更新项目配置
+        """
+        if isdir(self.project_path):
+            print('项目目录已经存在：%s' % self.project_path)
+            return False
+        #
+        if self.project in set(['upload', 'backup', 'tmp', 'deploy.log', 'version.txt']):
+            print(self.project)
+            error('非法项目名称')
+        # 判断端口是否冲突
+        confs = get_projects()
+        for prj, conf in confs.items():
+            if prj == self.project:
+                print(self.project)
+                error('项目名称冲突')
+            if conf['port'] == port:
+                print('port:', port)
+                error('端口号冲突')
+
+        # 创建项目目录
+        os.makedirs(self.project_path)
+        # 更新项目列表
+        confs[self.project] = {
+            'secret': secret,     # 秘钥
+            'port': port,                 # 端口号
+            'desc': desc,
+        }
+        update_confs(confs)
+        return True
+
+
+def get_projects() -> Dict:
+    """获取所有项目配置"""
+    conf_file = join(base_path, 'projects.json')
+    if not isfile(conf_file):
+        return {}
+    return json.load(conf_file)
+
+
+def update_confs(confs):
+    """更新项目配置"""
+    conf_file = join(base_path, 'projects.json')
+    with open(conf_file, encoding='utf8') as f:
+        f.write(json.dump(confs))

@@ -5,7 +5,7 @@ nginx_root = '/product_demo_devops/apps/nginx-conf/nginx-conf-v2/'
 # Nginx管理秘钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'
 # nginx网站配置所在目录
-nginx_site_path = '/etc/nginx/sites-enabled/'
+nginx_root = '/product_demo_devops/apps/website-light-devops/nginx-conf/'
 
 # 项目根目录
 root_path = '/product_demo_devops/apps/website-light-devops/projects/'

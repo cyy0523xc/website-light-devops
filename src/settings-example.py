@@ -13,13 +13,7 @@ root_path = '/tmp/'
 base_path = os.getcwd()
 base_path = os.path.join(base_path, os.path.dirname(__file__))
 
-# 部署密钥
-projects_conf = {
-    # 项目：text.eyedmp.com
-    # 项目对应根目录下的一个目录
-    'text.eyedmp.com': {
-        'secret': 'sdnk29isdk#%8',     # 秘钥
-        'port': 31000,                 # 端口号
-        'desc': '项目描述',
-    }
-}
+# 端口的范围
+# 定义范围主要是为了避免端口冲突
+port_min = 31000
+port_max = 31999

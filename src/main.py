@@ -14,6 +14,7 @@ import tarfile
 from fastapi import FastAPI, File, UploadFile, Form
 from settings import nginx_root, nginx_secret, nginx_site_path
 from settings import base_path
+from settings import port_min, port_max
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
@@ -213,7 +214,7 @@ async def api_project_init(
                        description='管理密钥'),
     project: str = Form(..., title='项目名称',
                         description='项目名称'),
-    port: int = Form(..., ge=31000, lt=32000, title='项目端口号',
+    port: int = Form(..., ge=port_min, le=port_max, title='项目端口号',
                      description='项目端口号'),
     desc: str = Form(..., title='项目说明',
                      description='项目说明'),
@@ -228,7 +229,6 @@ async def api_project_init(
 
     ppath = ProjectPath(project)
     ppath.init(port, prj_secret, desc)
-    # ppath.secret_check(prj_secret)
     site_conf_temp = join(base_path, 'nginx-site.conf')
     with open(site_conf_temp, encoding='utf8') as f:
         site_conf = f.read()

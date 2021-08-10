@@ -52,10 +52,11 @@ class ProjectPath:
         """
         if isdir(self.project_path):
             error('项目目录已经存在：%s' % self.project_path)
-        #
         if self.project in set(['upload', 'backup', 'tmp', 'deploy.log', 'version.txt']):
-            print(self.project)
-            error('非法项目名称')
+            error('非法项目名称: %s' % self.project)
+        if self.project.startswith('backup_'):
+            error('项目名称不允许以backup_开头: %s' % self.project)
+
         # 判断端口是否冲突
         confs = get_projects()
         for prj, conf in confs.items():

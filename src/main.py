@@ -11,12 +11,12 @@ import shutil
 import tarfile
 from fastapi import FastAPI, File, UploadFile, Form
 from settings import nginx_root, nginx_secret, nginx_site_path
-from settings import base_path
+from settings import base_path, root_path
 from settings import port_min, port_max
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
-from project import ProjectPath, get_projects
+from project import ProjectPath, get_projects, update_confs
 
 # print(base_path)
 with open(join(base_path, 'description.md'), encoding='utf8') as f:
@@ -242,6 +242,37 @@ async def api_project_init(
         f.write(site_conf)
 
     return succ_return('操作成功')
+
+
+@app.delete('/project', summary='项目删除', tags=['Project'])
+async def api_project_delete(
+    secret: str = Form(..., title='管理密钥',
+                       description='管理密钥'),
+    project: str = Form(..., title='项目名称',
+                        description='项目名称'),
+):
+    """项目删除\n
+    删除一个存在的项目。
+    """
+    if secret != nginx_secret:
+        error('管理密钥错误')
+
+    ppath = ProjectPath(project)
+    # 删除项目目录(备份)
+    shutil.move(ppath.project_path, join(root_path, "backup_%s" % project))
+
+    # 删除nginx配置
+    site_file = join(nginx_site_path, '%s.conf' % project)
+    if isfile(site_file):
+        os.remove(site_file)
+
+    # 修改配置
+    confs = get_projects()
+    if project in confs:
+        confs.pop(project)
+    update_confs(confs)
+    return succ_return('操作成功')
+
 
 
 @app.post('/project/history', summary='项目更新历史', tags=['Project'])

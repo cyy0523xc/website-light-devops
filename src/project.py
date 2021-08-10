@@ -51,8 +51,7 @@ class ProjectPath:
         3. 更新项目配置
         """
         if isdir(self.project_path):
-            print('项目目录已经存在：%s' % self.project_path)
-            return False
+            error('项目目录已经存在：%s' % self.project_path)
         #
         if self.project in set(['upload', 'backup', 'tmp', 'deploy.log', 'version.txt']):
             print(self.project)
@@ -61,11 +60,9 @@ class ProjectPath:
         confs = get_projects()
         for prj, conf in confs.items():
             if prj == self.project:
-                print(self.project)
-                error('项目名称冲突')
+                error('项目名称冲突: %s' % self.project)
             if conf['port'] == port:
-                print('port:', port)
-                error('端口号冲突')
+                error('端口号冲突: %d' % port)
 
         # 创建项目目录
         os.makedirs(self.project_path)

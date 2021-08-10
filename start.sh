@@ -6,5 +6,5 @@ if
 then
    echo $(date) > run.log
 else
-    nohup python3 src/main.py --key "$key" &
+    python3 src/main.py --key "$key"
 fi

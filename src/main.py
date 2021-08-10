@@ -241,7 +241,7 @@ async def api_project_init(
     with open(site_file, 'w', encoding='utf8') as f:
         f.write(site_conf)
 
-    succ_return('操作成功')
+    return succ_return('操作成功')
 
 
 @app.post('/project/history', summary='项目更新历史', tags=['Project'])

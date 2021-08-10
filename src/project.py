@@ -88,4 +88,4 @@ def update_confs(confs) -> None:
     """更新项目配置"""
     conf_file = join(base_path, 'projects.json')
     with open(conf_file, 'w', encoding='utf8') as f:
-        f.write(json.dump(confs))
+        json.dump(confs, f, ensure_ascii=False, sort_keys=True, indent=4)

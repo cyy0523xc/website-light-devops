@@ -1,8 +1,6 @@
 import os
 
-# nginx root path
-nginx_root = '/product_demo_devops/apps/nginx-conf/nginx-conf-v2/'
-# Nginx管理秘钥
+# Nginx管理密钥及管理密钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'
 # nginx网站配置所在目录
 nginx_site_path = '/product_demo_devops/apps/website-light-devops/nginx-conf/'
@@ -18,7 +16,12 @@ base_path = os.path.join(base_path, os.path.dirname(__file__))
 port_min = 31000
 port_max = 31999
 
+# 参数正则
+params_pattern = {
+    'project': '^[a-zA-Z\d][a-zA-Z\d\.\-]{3,99}$',
+    'version': '^(\d+\.){1,2}\d+$',
+}
+
 # 校验变量
-assert os.path.isdir(nginx_root)
 assert os.path.isdir(nginx_site_path)
 assert os.path.isdir(root_path)

@@ -10,9 +10,10 @@ import json
 import shutil
 import tarfile
 from fastapi import FastAPI, File, UploadFile, Form
-from settings import nginx_root, nginx_secret, nginx_site_path
+from settings import nginx_secret, nginx_site_path
 from settings import base_path, root_path
 from settings import port_min, port_max
+from settings import params_pattern
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
@@ -22,8 +23,11 @@ from project import ProjectPath, get_projects, update_confs
 with open(join(base_path, 'description.md'), encoding='utf8') as f:
     description = f.read()
 
+_idx = description.index('\n')
+title = description[:_idx].strip()
+description = description[_idx+1:].strip()
 app = FastAPI(
-    title='轻量级项目版本发布管理工具',
+    title=title,
     description=description,
     version="0.7",
 )
@@ -33,12 +37,12 @@ app = FastAPI(
           response_model=BaseResp)
 async def api_version_release(
     tar_file: UploadFile = File(..., description='待发布的打包文件，现支持tar格式'),
-    project: str = Form(..., title='项目名称',
+    project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
-    secret: str = Form(..., title='项目发布密钥',
+    secret: str = Form(..., min_length=16, max_length=32, title='项目发布密钥',
                        description='项目发布密钥'),
-    version: str = Form(..., regex='^(\d+\.){1,2}\d+$', title='版本号',
-                        description='版本应该有自己的版本号，以便后续查询。版本号规范：1.0, 0.5.2'),
+    version: str = Form(..., regex=params_pattern['version'], title='版本号',
+                        description='版本应该有自己的版本号，以便后续查询。版本号规范：1.0, 0.5.2，最多允许三级版本号'),
     remark: str = Form(..., min_length=10, max_length=100, title='版本更新备注',
                        description='新版本发布的时候，应该写上相应的更新说明，这些信息会记录在版本更新记录里，通过历史接口可以查询'),
 ):
@@ -111,7 +115,7 @@ async def api_version_release(
 @app.post('/version/rollback', summary='版本回滚接口', tags=['版本管理'],
           response_model=BaseResp)
 async def api_version_rollback(
-    project: str = Form(..., title='项目名称',
+    project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
     secret: str = Form(..., title='项目发布密钥',
                        description='项目发布密钥'),
@@ -147,19 +151,6 @@ async def api_version_rollback(
     return succ_return()
 
 
-@app.post('/nginx/pull', summary='Nginx配置更新', tags=['Nginx'])
-async def api_nginx_pull(
-    secret: str = Form(..., title='管理密钥',
-                       description='管理密钥'),
-):
-    """相当于在Nginx配置目录执行git pull"""
-    if secret != nginx_secret:
-        error('秘钥错误')
-    cmds = ['cd %s' % nginx_root, 'git pull']
-    msg = run_cmds(cmds)
-    return succ_return(msg=msg)
-
-
 @app.post('/nginx/reload', summary='Nginx配置重新加载', tags=['Nginx'],
           response_model=BaseResp)
 async def api_nginx_reload(
@@ -168,7 +159,7 @@ async def api_nginx_reload(
 ):
     """相当于执行命令: nginx -s reload"""
     if secret != nginx_secret:
-        error('秘钥错误')
+        error('管理密钥错误')
     cmds = ['nginx -s reload']
     msg = run_cmds(cmds)
     return succ_return(msg=msg)
@@ -210,14 +201,14 @@ async def api_config_projects():
 async def api_project_init(
     secret: str = Form(..., title='管理密钥',
                        description='管理密钥'),
-    project: str = Form(..., title='项目名称',
+    project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
     port: int = Form(..., ge=port_min, le=port_max, title='项目端口号',
                      description='项目端口号'),
-    desc: str = Form(..., title='项目说明',
-                     description='项目说明'),
     prj_secret: str = Form(..., title='项目发布密钥',
                            description='项目发布密钥'),
+    desc: str = Form(..., title='项目说明',
+                     description='项目说明'),
 ):
     """项目初始化\n
     在初始化之前，项目必须已经存在配置文件中。
@@ -248,7 +239,7 @@ async def api_project_init(
 async def api_project_delete(
     secret: str = Form(..., title='管理密钥',
                        description='管理密钥'),
-    project: str = Form(..., title='项目名称',
+    project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
 ):
     """项目删除\n
@@ -281,7 +272,7 @@ async def api_project_delete(
 
 @app.post('/project/history', summary='项目更新历史', tags=['Project'])
 async def api_version_history(
-    project: str = Form(..., title='项目名称',
+    project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
 ):
     """获取版本更新的历史信息"""

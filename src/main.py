@@ -24,7 +24,7 @@ with open(join(base_path, 'description.md'), encoding='utf8') as f:
     description = f.read()
 
 _idx = description.index('\n')
-title = description[:_idx].strip()
+title = description[:_idx].strip().strip('# ')
 description = description[_idx+1:].strip()
 app = FastAPI(
     title=title,

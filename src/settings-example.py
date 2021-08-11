@@ -1,5 +1,8 @@
 import os
 
+# 默认端口
+default_port = 18000
+
 # Nginx管理密钥及管理密钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'
 # nginx网站配置所在目录

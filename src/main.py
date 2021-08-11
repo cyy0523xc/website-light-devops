@@ -296,4 +296,5 @@ async def api_version_history(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=18000, reload=True)
+    from settings import default_port
+    uvicorn.run("main:app", host="0.0.0.0", port=default_port, reload=True)

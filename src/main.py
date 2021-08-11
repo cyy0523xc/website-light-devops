@@ -203,6 +203,8 @@ async def api_project_init(
                        description='管理密钥'),
     project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
+    host: str = Form(None, regex=params_pattern['host'], title='项目访问域名',
+                     description='项目访问域名，如果该值为空，则使用IP+端口进行访问'),
     port: int = Form(..., ge=port_min, le=port_max, title='项目端口号',
                      description='项目端口号'),
     prj_secret: str = Form(..., title='项目发布密钥',
@@ -222,11 +224,14 @@ async def api_project_init(
     with open(site_conf_temp, encoding='utf8') as f:
         site_conf = f.read()
     # 配置参数
-    site_conf = site_conf.replace('__desc__', desc)
+    site_conf = site_conf.replace('__desc__', desc.replace('\r\n', '').replace('\n', ''))
     site_conf = site_conf.replace('__port__', str(port))
     site_conf = site_conf.replace('__root__', join(ppath.project_path, 'dist'))
     site_conf = site_conf.replace('__error_log__', join(ppath.project_path, 'error.log'))
     site_conf = site_conf.replace('__access_log__', join(ppath.project_path, 'access.log'))
+    if host is not None:
+        site_conf = site_conf.replace('__host__', 'server_name  %s' % host)
+
     # 写入配置
     site_file = join(nginx_site_path, '%s.conf' % project)
     with open(site_file, 'w', encoding='utf8') as f:

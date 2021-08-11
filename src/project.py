@@ -18,11 +18,12 @@ class ProjectPath:
         # 项目根目录
         self.project_path = join(root_path, project)
         # 上传目录
-        self.upload_path = join(root_path, project, 'upload')
+        self.upload_path = join(root_path, project, '.upload')
         # 版本更新备份目录
-        self.project_bak = join(root_path, project, 'backup')
-        # 版本更新临时目录
-        self.project_tmp = join(root_path, project, 'tmp')
+        self.project_bak = join(root_path, project, '.backup')
+        # 版本回滚临时目录
+        # 版本回滚时为了避免回滚失败，需要先将当前项目进行临时备份
+        self.project_tmp = join(root_path, project, '.tmp')
         # 版本更新日志
         self.deploy_log = join(root_path, project, 'deploy.log')
         # 版本号记录文件
@@ -33,9 +34,8 @@ class ProjectPath:
         if secret != project_conf['secret']:
             print(self.project, secret)
             error('项目发布密钥错误')
-        if self.project in set(['upload', 'backup', 'tmp', 'deploy.log', 'version.txt']):
-            print(self.project)
-            error('非法项目名称')
+        if self.project in set(['deploy.log', 'version.txt']) or self.project.startswith('.'):
+            error('非法项目名称: %s' % self.project)
 
         if not isdir(self.project_path) or not isdir(self.upload_path):
             print(self.project_path, isdir(self.project_path))
@@ -67,6 +67,7 @@ class ProjectPath:
 
         # 创建项目目录
         os.makedirs(self.project_path)
+        os.makedirs(self.upload_path)
         # 更新项目列表
         confs[self.project] = {
             'secret': secret,     # 秘钥

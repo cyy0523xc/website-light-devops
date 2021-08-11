@@ -20,6 +20,7 @@ port_max = 31999
 params_pattern = {
     'project': '^[a-zA-Z\d][a-zA-Z\d\.\-]{3,99}$',
     'version': '^(\d+\.){1,2}\d+$',
+    'host': '^[a-zA-Z\d][a-zA-Z\d\.\-]{3,63}$',
 }
 
 # 校验变量

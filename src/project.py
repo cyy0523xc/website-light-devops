@@ -6,7 +6,7 @@
 # Created Time: 2021-08-10
 import os
 import json
-from typing import Dict
+from typing import Dict, Optional
 from os.path import join, isdir, isfile
 from settings import root_path, base_path
 from utils import error
@@ -29,8 +29,14 @@ class ProjectPath:
         # 版本号记录文件
         self.version_path = join(root_path, project, 'version.txt')
 
-    def secret_check(self, secret: str, project_conf: dict) -> bool:
+    def secret_check(self, secret: str, project_conf: Optional[dict] = None) -> bool:
         """安全检测"""
+        if project_conf is None:
+            _tmps = get_projects()
+            if self.project not in _tmps:
+                error('项目不存在：%s' % self.project)
+            project_conf = _tmps[self.project]
+
         if secret != project_conf['secret']:
             print(self.project, secret)
             error('项目发布密钥错误')

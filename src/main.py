@@ -49,7 +49,10 @@ async def api_version_release(
                        description='新版本发布的时候，应该写上相应的更新说明，这些信息会记录在版本更新记录里，通过历史接口可以查询'),
 ):
     """新版本发布\n
-    注意事项：新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确"""
+    注意事项：\n
+    1. 新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确 \n
+    2. 注意打包文件必须满足要求，打包的目录必须要有一个`dist`目录
+    """
     ppath = ProjectPath(project)
     ppath.secret_check(secret)
     tar_filename = tar_file.filename

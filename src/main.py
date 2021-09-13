@@ -3,6 +3,7 @@
 1. 部署新版本
 2. 回滚就版本
 """
+import re
 import os
 from os.path import join, isfile, isdir
 import time
@@ -56,11 +57,9 @@ async def api_version_release(
     ppath = ProjectPath(project)
     ppath.secret_check(secret)
     tar_filename = tar_file.filename
-    if any([not tar_filename.isascii(),
-            '/' in tar_filename,
-            '\\' in tar_filename,
+    if any([not re.match('^[a-zA-Z0-9\.\-\_]+$', tar_filename),
             not tar_filename.endswith('.tar')]):
-        error('非法文件或者文件名：%s' % tar_filename)
+        error('非法文件或者文件名：%s（文件名的字符必须是英文，数字，点号，下划线，减号等）' % tar_filename)
 
     # 获取旧的版本号信息
     if isfile(ppath.version_path):

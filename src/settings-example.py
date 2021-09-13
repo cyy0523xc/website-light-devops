@@ -1,7 +1,11 @@
 import os
 
-# 默认端口
-default_port = 18000
+# 工具部署端口
+# 服务启动时使用端口
+deploy_port = 18000
+# 工具访问host
+# 该参数展示在工具的接口文档上
+deploy_host = ''
 
 # Nginx管理密钥及管理密钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'

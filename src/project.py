@@ -17,6 +17,8 @@ class ProjectPath:
         self.project = project
         # 项目根目录
         self.project_path = join(root_path, project)
+        # 当前项目的代码目录
+        self.project_dist = join(root_path, project, 'dist')
         # 上传目录
         self.upload_path = join(root_path, project, '.upload')
         # 版本更新备份目录

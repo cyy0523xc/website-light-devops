@@ -71,7 +71,7 @@ async def api_version_release(
     # 保存到上传目录
     tar_file = tar_file.file
     upload_filename = join(ppath.upload_path, tar_filename)
-    with open(upload_filename, 'wb', encoding='utf8') as f:
+    with open(upload_filename, 'wb') as f:
         f.write(tar_file.read())
 
     # 解压到项目模块目录
@@ -84,7 +84,7 @@ async def api_version_release(
         shutil.rmtree(ppath.project_bak, ignore_errors=True)
 
     # 备份旧项目（回滚时可以直接回滚该目录）
-    shutil.move(ppath.project_path, ppath.project_bak)
+    shutil.move(ppath.project_dist, ppath.project_bak)
 
     # 部署新项目
     with tarfile.open(upload_filename, encoding='utf8') as tfile:
@@ -136,11 +136,11 @@ async def api_version_rollback(
     shutil.move(ppath.project_path, ppath.project_tmp)
     try:
         # 回滚备份
-        shutil.move(ppath.project_bak, ppath.project_path)
+        shutil.move(ppath.project_bak, ppath.project_dist)
     except Exception as e:
         # 回滚不成功则还原
         print('rollbak error: ', e)
-        shutil.move(ppath.project_tmp, ppath.project_path)
+        shutil.move(ppath.project_tmp, ppath.project_dist)
         return err_return('回滚版本失败')
 
     # 删除多余的备份

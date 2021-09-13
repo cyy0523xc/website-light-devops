@@ -5,7 +5,7 @@ import os
 deploy_port = 18000
 # 工具访问host
 # 该参数展示在工具的接口文档上
-deploy_host = ''
+deploy_host = '192.168.1.242'
 
 # Nginx管理密钥及管理密钥
 nginx_secret = 'b5daadda4a6911ebac98c5b326b3161c'

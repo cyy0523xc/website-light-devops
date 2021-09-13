@@ -27,11 +27,11 @@ with open(join(base_path, 'description.md'), encoding='utf8') as f:
 _idx = description.index('\n')
 title = description[:_idx].strip().strip('# ')
 description = description[_idx+1:].strip()
-description = description.replace('{host}', deploy_host).replace('{port}', deploy_port)
+description = description.replace('{host}', deploy_host).replace('{port}', str(deploy_port))
 app = FastAPI(
     title=title,
     description=description,
-    version="0.7",
+    version="0.7.1",
 )
 
 

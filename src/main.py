@@ -84,7 +84,9 @@ async def api_version_release(
         shutil.rmtree(ppath.project_bak, ignore_errors=True)
 
     # 备份旧项目（回滚时可以直接回滚该目录）
-    shutil.move(ppath.project_dist, ppath.project_bak)
+    # 注意：第一次运行没有该目录
+    if isdir(ppath.project_dist):
+        shutil.move(ppath.project_dist, ppath.project_bak)
 
     # 部署新项目
     with tarfile.open(upload_filename, encoding='utf8') as tfile:

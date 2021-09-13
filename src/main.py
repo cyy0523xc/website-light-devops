@@ -235,8 +235,8 @@ async def api_project_init(
     site_conf = site_conf.replace('__root__', join(ppath.project_path, 'dist'))
     site_conf = site_conf.replace('__error_log__', join(ppath.project_path, 'error.log'))
     site_conf = site_conf.replace('__access_log__', join(ppath.project_path, 'access.log'))
-    if host is not None:
-        site_conf = site_conf.replace('__host__', 'server_name  %s' % host)
+    host_conf = 'server_name  %s' % host if host is not None else ''
+    site_conf = site_conf.replace('__host__', host_conf)
 
     # 写入配置
     site_file = join(nginx_site_path, '%s.conf' % project)

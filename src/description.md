@@ -3,9 +3,9 @@
 ## 使用步骤
 
 1. 查看已有项目：get /project
-2. 如果项目尚未创建，则需要先初始化项目：post /project/init
+2. 如果项目尚未创建，则需要先初始化项目：post /project/init。初始化项目时，可以给项目指定一个密钥，后续的版本更新等都要使用该密钥。
 3. 初始化项目之后，需要刷新nginx配置，端口才会有效：post /nginx/reload
-4. 发布新版本：post /version/release
+4. 发布新版本：post /version/release。发布成功之后，通过端口即可进行访问: `http://{host}:{port}`
 5. 如果发布的新版本发现有问题，则可以进行回滚：post /version/rollback （注意：目前只支持回滚一次）
 6. 如果需要查看项目的历史更新信息，则可以：post /project/history
 7. 如果项目已经无效，则可以删除：delete /project

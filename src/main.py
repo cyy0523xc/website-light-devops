@@ -14,6 +14,7 @@ from settings import nginx_secret, nginx_site_path
 from settings import base_path, root_path
 from settings import port_min, port_max
 from settings import params_pattern
+from settings import deploy_port, deploy_host
 from main_settings import BaseResp
 from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
@@ -26,6 +27,7 @@ with open(join(base_path, 'description.md'), encoding='utf8') as f:
 _idx = description.index('\n')
 title = description[:_idx].strip().strip('# ')
 description = description[_idx+1:].strip()
+description = description.replace('{host}', deploy_host).replace('{port}', deploy_port)
 app = FastAPI(
     title=title,
     description=description,
@@ -207,8 +209,8 @@ async def api_project_init(
                      description='项目访问域名，如果该值为空，则使用IP+端口进行访问'),
     port: int = Form(..., ge=port_min, le=port_max, title='项目端口号',
                      description='项目端口号'),
-    prj_secret: str = Form(..., title='项目发布密钥',
-                           description='项目发布密钥'),
+    prj_secret: str = Form(..., title='项目发布密钥，每个项目可以定义不同的发布密钥',
+                           description='项目发布密钥，每个项目可以定义不同的发布密钥'),
     desc: str = Form(..., title='项目说明',
                      description='项目说明'),
 ):
@@ -296,5 +298,4 @@ async def api_version_history(
 
 if __name__ == "__main__":
     import uvicorn
-    from settings import default_port
-    uvicorn.run("main:app", host="0.0.0.0", port=default_port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=deploy_port, reload=True)

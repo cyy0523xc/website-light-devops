@@ -163,7 +163,9 @@ async def api_nginx_reload(
     secret: str = Form(..., title='管理密钥',
                        description='管理密钥'),
 ):
-    """相当于执行命令: nginx -s reload"""
+    """相当于执行命令: nginx -s reload\n
+    注意：**需要以root用户启动服务时，该命令才有效**
+    """
     if secret != nginx_secret:
         error('管理密钥错误')
     cmds = ['nginx -s reload']

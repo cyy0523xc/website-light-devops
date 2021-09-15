@@ -42,8 +42,8 @@ async def api_version_release(
     tar_file: UploadFile = File(..., description='待发布的打包文件，现支持tar格式'),
     project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
-    secret: str = Form(..., min_length=16, max_length=32, title='项目发布密钥',
-                       description='项目发布密钥'),
+    secret: str = Form(..., min_length=16, max_length=32, title='项目密钥',
+                       description='项目密钥'),
     version: str = Form(..., regex=params_pattern['version'], title='版本号',
                         description='版本应该有自己的版本号，以便后续查询。版本号规范：1.0, 0.5.2，最多允许三级版本号'),
     remark: str = Form(..., min_length=10, max_length=100, title='版本更新备注',
@@ -52,7 +52,8 @@ async def api_version_release(
     """新版本发布\n
     注意事项：\n
     1. 新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确 \n
-    2. 注意打包文件必须满足要求，打包的目录必须要有一个`dist`目录
+    2. 打包文件必须满足要求，目录必须要有一个`dist`目录 \n
+    3. 如果是第一次提交代码，需要重新加载
     """
     ppath = ProjectPath(project)
     ppath.secret_check(secret)
@@ -123,8 +124,8 @@ async def api_version_release(
 async def api_version_rollback(
     project: str = Form(..., regex=params_pattern['project'], title='项目名称',
                         description='项目名称'),
-    secret: str = Form(..., title='项目发布密钥',
-                       description='项目发布密钥'),
+    secret: str = Form(..., title='项目密钥',
+                       description='项目密钥'),
 ):
     """版本回滚到上一个版本"""
     ppath = ProjectPath(project)

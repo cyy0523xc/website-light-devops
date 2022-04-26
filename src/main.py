@@ -39,14 +39,16 @@ app = FastAPI(
     title=title,
     description=description,
     version="0.7.2",
-    docs_url="/docs"
+    docs_url="/docs_old"
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+print(os.getcwd(), isdir('src/static'))
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
+    print(app.openapi_prefix)
     return get_swagger_ui_html(
         openapi_url=app.openapi_url,
         title=app.title + " - 接口文档",

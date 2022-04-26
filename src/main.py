@@ -21,6 +21,12 @@ from utils import err_return, succ_return, error
 from utils import run_cmds, cmp_version
 from project import ProjectPath, get_projects, update_confs
 
+from fastapi.openapi.docs import (
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
+from fastapi.staticfiles import StaticFiles
+
 # print(base_path)
 with open(join(base_path, 'description.md'), encoding='utf8') as f:
     description = f.read()
@@ -32,8 +38,27 @@ description = description.replace('{host}', deploy_host).replace('{port}', str(d
 app = FastAPI(
     title=title,
     description=description,
-    version="0.7.1",
+    version="0.7.2",
+    docs_url="/docs"
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - 接口文档",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url="/static/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui.css",
+    )
+
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
 
 
 @app.post('/version/release', summary='新版本发布接口', tags=['版本管理'],

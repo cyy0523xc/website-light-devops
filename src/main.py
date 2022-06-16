@@ -38,8 +38,8 @@ description = description.replace('{host}', deploy_host).replace('{port}', str(d
 app = FastAPI(
     title=title,
     description=description,
-    version="0.7.2",
-    docs_url="/docs_old"
+    version="0.7.3",
+    docs_url=None
 )
 
 print(os.getcwd(), isdir('src/static'))
@@ -79,7 +79,15 @@ async def api_version_release(
     注意事项：\n
     1. 新版本发布之前，应该先查看版本更新历史信息，确认更新的版本是否正确 \n
     2. 打包文件必须满足要求，目录必须要有一个`dist`目录 \n
-    3. 如果是第一次提交代码，需要重新加载
+    3. 如果是第一次提交代码，需要重新加载\n
+
+    如果更新版本之后，发现页面上没有变化：\n
+    1. 查看是否有更新历史记录？\n
+    2. 查看更新工具的url地址是否正确？\n
+    3. 解压tar包，查看文件的修改时间是否正确？（通常这个时间应该是编译的时间）\n
+    4. 注意更新历史记录里的`js_file_last_updated_at`字段，该字段是服务器上js文件的最后更新时间，注意和本地的有多大差异\n
+
+    如果以上都确认没问题，则可能需要联系管理员。
     """
     ppath = ProjectPath(project)
     ppath.secret_check(secret)
@@ -132,6 +140,18 @@ async def api_version_release(
     with open(ppath.version_path, 'w+', encoding='utf8') as f:
         f.write(version)
 
+    # 获取文件的最后修改时间
+    max_mtime = 0
+    for filename in os.listdir('dist'):
+        if not filename.endswith('.js'):
+            continue
+        path = os.path.join('dist', filename)
+        file_stat = os.stat(path)
+        file_mtime = file_stat.st_mtime
+        if file_mtime > max_mtime:
+            max_mtime = file_mtime
+    max_mtime = time.localtime(max_mtime)
+
     # 记录部署信息
     with open(ppath.deploy_log, 'a+', encoding='utf8') as f:
         data = {
@@ -139,6 +159,7 @@ async def api_version_release(
             'action': 'release',
             'filename': tar_filename,
             'version': version,
+            'js_file_last_updated_at': time.strftime("%Y-%m-%d %H:%M:%S", max_mtime),
             'remark': remark,
         }
         f.write(json.dumps(data) + '\n')

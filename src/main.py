@@ -346,7 +346,7 @@ async def api_version_history(
 
     history = [m.strip() for m in history]
     history = [json.loads(m) for m in history if len(m) > 0]
-    return history
+    return history[::-1]
 
 
 if __name__ == "__main__":

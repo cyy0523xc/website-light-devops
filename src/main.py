@@ -142,14 +142,13 @@ async def api_version_release(
 
     # 获取文件的最后修改时间
     max_mtime = 0
-    for filename in os.listdir('dist'):
+    for filename in os.listdir(ppath.project_dist):
         if not filename.endswith('.js'):
             continue
-        path = os.path.join('dist', filename)
+        path = os.path.join(ppath.project_dist, filename)
         file_stat = os.stat(path)
-        file_mtime = file_stat.st_mtime
-        if file_mtime > max_mtime:
-            max_mtime = file_mtime
+        if file_stat.st_mtime > max_mtime:
+            max_mtime = file_stat.st_mtime
     max_mtime = time.localtime(max_mtime)
 
     # 记录部署信息

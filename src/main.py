@@ -42,8 +42,8 @@ app = FastAPI(
     docs_url=None
 )
 
-print(os.getcwd(), isdir('src/static'))
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+assert isdir("static") or isdir("src/static"), "静态文件目录不存在"
+app.mount("/static", StaticFiles(directory="static" if isdir("./static") else "src/static"), name="static")
 
 
 @app.get("/docs", include_in_schema=False)
